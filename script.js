@@ -3,6 +3,7 @@ window.enterSite = enterSite;
 window.resetSite = resetSite;
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Site loaded successfully');
     // Elements
     const logo = document.getElementById('logo-landing');
     const logoShine = document.querySelector('.logo-shine-layer');
@@ -27,22 +28,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Enter Site Logic
-    if (logo) {
-        logo.addEventListener('click', () => {
-            // Play animation
-            logo.parentElement.classList.add('clicked');
+    function triggerEntrance() {
+        if (!logo || !landingScreen) return;
 
-            // Fade screen to black
-            if (landingScreen) {
-                landingScreen.classList.add('blackout');
-            }
+        // Prevent multiple triggers
+        if (landingScreen.classList.contains('blackout')) return;
 
-            // Wait for animation and blackout before entering
-            setTimeout(() => {
-                enterSite();
-            }, 1200); // Wait slightly longer than the blackout transition
-        });
+        // Play animation
+        logo.parentElement.classList.add('clicked');
+
+        // Fade screen to black
+        landingScreen.classList.add('blackout');
+
+        // Wait for animation and blackout before entering
+        setTimeout(() => {
+            enterSite();
+        }, 1200); // Wait slightly longer than the blackout transition
     }
+
+    if (logo) {
+        logo.addEventListener('click', triggerEntrance);
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const landingScreen = document.getElementById('landing');
+            if (landingScreen && !landingScreen.classList.contains('hidden')) {
+                triggerEntrance();
+            }
+        }
+    });
 
     // Home Link Logic
     if (homeLink) {
