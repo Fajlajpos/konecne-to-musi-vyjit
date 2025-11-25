@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoShine = document.querySelector('.logo-shine-layer');
     const homeLink = document.getElementById('nav-home');
     const landingScreen = document.getElementById('landing');
+    const cartBadge = document.querySelector('.cart-badge');
+    let cartCount = 0;
 
     // Logo Shine Effect
     if (logo && logoShine) {
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Enter Site Logic
     // Enter Site Logic
     function triggerEntrance() {
         if (!logo || !landingScreen) return;

@@ -215,6 +215,38 @@ body::after {
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
 }
 
+.cart-icon-container {
+    position: relative;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.cart-icon-container:hover {
+    transform: scale(1.1);
+    color: #ccc;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #fff;
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
 /* Sections */
 .clothing-section,
 .about-section {
