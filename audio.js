@@ -21,7 +21,7 @@ class SoundManager {
 
             // Master volume
             this.masterGain = this.ctx.createGain();
-            this.masterGain.gain.value = this.isMuted ? 0 : 0.15; // Reduced volume to 15%
+            this.masterGain.gain.value = this.isMuted ? 0 : 0.3; // Restored volume to 30%
             this.masterGain.connect(this.ctx.destination);
 
             this.initialized = true;
@@ -39,7 +39,7 @@ class SoundManager {
             // Smooth transition
             const now = this.ctx.currentTime;
             this.masterGain.gain.cancelScheduledValues(now);
-            this.masterGain.gain.linearRampToValueAtTime(this.isMuted ? 0 : 0.15, now + 0.1);
+            this.masterGain.gain.linearRampToValueAtTime(this.isMuted ? 0 : 0.3, now + 0.1);
         }
 
         return this.isMuted;
@@ -63,7 +63,7 @@ class SoundManager {
         osc.frequency.setValueAtTime(150, t);
         osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
 
-        gain.gain.setValueAtTime(0.2, t); // Reduced from 0.4
+        gain.gain.setValueAtTime(0.4, t); // Restored to 0.4
         gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
 
         osc.start(t);
@@ -104,7 +104,7 @@ class SoundManager {
             const start = t + (i * 0.05);
 
             gain.gain.setValueAtTime(0, start);
-            gain.gain.linearRampToValueAtTime(0.1, start + 0.1); // Reduced from 0.2
+            gain.gain.linearRampToValueAtTime(0.2, start + 0.1); // Restored to 0.2
             gain.gain.exponentialRampToValueAtTime(0.01, start + 0.8);
 
             osc.start(start);
