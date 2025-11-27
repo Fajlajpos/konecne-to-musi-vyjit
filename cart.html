@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - OBLIVIONS</title>
+    <meta name="description" content="Your OBLIVIONS shopping cart">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Grain overlay -->
+    <div class="grain-overlay"></div>
+
+    <!-- Cart Container -->
+    <div class="cart-container">
+        <!-- Header -->
+        <div class="cart-header">
+            <div class="cart-logo">
+                <img src="logo_metal.png" alt="OBLIVIONS" class="cart-logo-image">
+            </div>
+            <h1 class="cart-title">SHOPPING CART</h1>
+            <a href="index.html?skipLanding=true#obleceni" class="back-to-shop">← Back to shop</a>
+        </div>
+
+        <!-- Main Cart Content -->
+        <div class="cart-content">
+            <!-- Cart Items Section -->
+            <div class="cart-items-section">
+                <!-- Empty Cart State -->
+                <div id="empty-cart" class="empty-cart" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                        class="empty-cart-icon">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <h2>Your cart is empty</h2>
+                    <p>Add something from our collection</p>
+                    <button id="continue-shopping" class="continue-shopping-btn">CONTINUE SHOPPING</button>
+                </div>
+
+                <!-- Cart Items List -->
+                <div id="cart-items" class="cart-items-list">
+                    <!-- Items will be rendered here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Cart Summary Section -->
+            <div id="cart-summary" class="cart-summary" style="display: none;">
+                <h2 class="summary-title">ORDER SUMMARY</h2>
+
+                <div class="summary-row">
+                    <span>Items:</span>
+                    <span id="cart-item-count">0 items</span>
+                </div>
+
+                <div class="chrome-divider"></div>
+
+                <div class="summary-row total-row">
+                    <span>Total:</span>
+                    <span id="cart-total" class="total-price">0 Kč</span>
+                </div>
+
+                <button id="checkout-btn" class="checkout-btn">PROCEED TO CHECKOUT</button>
+
+                <a href="index.html?skipLanding=true#obleceni" class="continue-link">Continue shopping</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="audio.js"></script>
+    <script src="cart.js"></script>
+</body>
+
+</html>

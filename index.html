@@ -33,6 +33,24 @@
                 <a href="#" id="nav-home" class="nav-link">HOME</a>
                 <a href="#obleceni" class="nav-link">CLOTHING</a>
                 <a href="#o-nas" class="nav-link">ABOUT US</a>
+
+                <!-- User Icon -->
+                <div class="user-icon-container" id="user-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-user">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="user-name" id="user-name" style="display: none;"></span>
+                    <!-- Dropdown Menu -->
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="login.html" id="login-link" class="dropdown-item">Log in</a>
+                        <a href="register.html" id="register-link" class="dropdown-item">Sign up</a>
+                        <button id="logout-btn" class="dropdown-item logout-btn" style="display: none;">Log out</button>
+                    </div>
+                </div>
+
                 <div class="cart-icon-container">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -87,14 +105,15 @@
                 <h2 class="section-title">ABOUT US</h2>
                 <div class="about-content">
                     <p class="about-text">
-                        OBLIVIONS je česká značka zrozená z temnoty. Nejsme jen oblečení, jsme odrazem toho, co zůstává
-                        skryto ve stínech.
-                        Každý steh nese příběh zapomnění, každý střih je manifestem proti všednosti.
+                        OBLIVIONS isn't just a brand. It's a statement. A rebellion against the noise of the colorful
+                        world.
+                        We craft armor for the modern soul, forged in the shadows of the heart of Europe.
+                        We don't follow trends. We embody the timeless elegance of the void.
                     </p>
                     <p class="about-text">
-                        Vycházíme z prázdnoty, abychom dali tvar chaosu. Naše tvorba je pro ty, kteří se nebojí
-                        pohlédnout do propasti
-                        a najít v ní svou vlastní identitu.
+                        For those who find comfort in silence. For those who see beauty in darkness.
+                        Join us, and wear your story. Not on your sleeve, but as your second skin.
+                        Embrace the unknown. Become the mystery.
                     </p>
                     <div class="chrome-divider"></div>
                     <p class="about-quote">
@@ -109,6 +128,9 @@
         </footer>
     </div>
 
+    <script src="cart.js"></script>
+    <script src="audio.js"></script>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
 </body>
 

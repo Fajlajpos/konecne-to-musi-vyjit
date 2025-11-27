@@ -4,6 +4,39 @@ window.resetSite = resetSite;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Site loaded successfully');
+
+    // Check if we should skip landing screen (after login/register/logout)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('skipLanding') === 'true') {
+        // Immediately enter site and skip landing screen
+        const landingScreen = document.getElementById('landing');
+        const mainContent = document.getElementById('main-content');
+        const body = document.body;
+
+        if (landingScreen && mainContent) {
+            landingScreen.classList.add('hidden');
+            landingScreen.style.display = 'none'; // Hide immediately
+            mainContent.style.display = 'block';
+            mainContent.style.opacity = '1';
+            body.style.overflow = 'auto';
+
+            // Scroll to the hash if present (e.g., #obleceni)
+            setTimeout(() => {
+                if (window.location.hash) {
+                    const targetId = window.location.hash.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            }, 100);
+        }
+
+        // Clean up URL (remove skipLanding parameter)
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
     // Elements
     const logo = document.getElementById('logo-landing');
     const logoShine = document.querySelector('.logo-shine-layer');
@@ -127,8 +160,38 @@ function enterSite() {
         // 3. Enable scrolling
         body.style.overflow = 'auto';
 
-        // 4. Scroll to top of content just in case
-        window.scrollTo(0, 0);
+        // Navigation Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const clothingSection = document.getElementById('obleceni');
+        const aboutSection = document.getElementById('o-nas');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+
+                if (href === '#o-nas') {
+                    e.preventDefault();
+                    if (clothingSection) clothingSection.style.display = 'none';
+                    if (aboutSection) {
+                        aboutSection.style.display = 'block';
+                        aboutSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (href === '#obleceni' || href === '#') {
+                    e.preventDefault();
+                    if (aboutSection) aboutSection.style.display = 'none';
+                    if (clothingSection) {
+                        clothingSection.style.display = 'block';
+                        clothingSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // Check URL hash on load
+        if (window.location.hash === '#o-nas') {
+            if (clothingSection) clothingSection.style.display = 'none';
+            if (aboutSection) aboutSection.style.display = 'block';
+        }
     }, 50);
 }
 
@@ -146,7 +209,8 @@ function resetSite() {
     setTimeout(() => {
         mainContent.style.display = 'none';
 
-        // 2. Show landing screen
+        // 2. Show landing screen - remove inline styles and reset classes
+        landingScreen.style.display = ''; // Remove inline display:none
         landingScreen.classList.remove('hidden');
         landingScreen.classList.remove('blackout'); // Reset blackout
 
