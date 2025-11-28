@@ -200,9 +200,9 @@ if (window.location.pathname.includes('register.html')) {
             // Show success message
             showMessage('success-message', 'Registration successful! Redirecting...', false);
 
-            // Redirect to clothing section (skip landing)
+            // Redirect to home page (skip landing)
             setTimeout(() => {
-                window.location.href = 'index.html?skipLanding=true#obleceni';
+                window.location.href = 'index.html?skipLanding=true';
             }, 1500);
         });
     });
@@ -274,8 +274,8 @@ if (window.location.pathname.includes('login.html')) {
             // Save session
             saveSession(user);
 
-            // Redirect to clothing section (skip landing)
-            window.location.href = 'index.html?skipLanding=true#obleceni';
+            // Redirect to home page (skip landing)
+            window.location.href = 'index.html?skipLanding=true';
         });
     });
 }

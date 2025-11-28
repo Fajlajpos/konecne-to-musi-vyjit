@@ -1,4 +1,4 @@
-﻿/* Reset and Base Styles */
+/* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -9,8 +9,8 @@ body {
     font-family: 'Courier New', Courier, monospace;
     background-color: #050505;
     color: #e0e0e0;
-    overflow: hidden;
-    /* Prevent scroll initially */
+    overflow-x: hidden;
+    /* Only prevent horizontal scroll, allow vertical scroll */
     /* Main Background Image */
     background-image: url('bg_main.jpg');
     background-size: cover;
@@ -619,7 +619,7 @@ body::after {
     height: 4px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
-    overflow: hidden;
+    overflow-x: hidden;
     margin-bottom: 0.3rem;
 }
 
@@ -986,7 +986,7 @@ body::after {
     height: 140px;
     /* Increased from 120px */
     background-color: #080808;
-    overflow: hidden;
+    overflow-x: hidden;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
