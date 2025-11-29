@@ -36,7 +36,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: false, // Set to true if using HTTPS
+        secure: true, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -184,12 +184,15 @@ app.get('/api/admin/orders/:id/items', isAuthenticated, isAdmin, (req, res) => {
 // 3. Serve Static Files (Frontend)
 app.use(express.static(__dirname));
 
-// Fallback for SPA (if needed, but for now just serving files)
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'index.html'));
-// });
+// Start Server (HTTPS)
+const https = require('https');
+const fs = require('fs');
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+const httpsOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'certs', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem'))
+};
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`Secure Server running on https://localhost:${PORT}`);
 });

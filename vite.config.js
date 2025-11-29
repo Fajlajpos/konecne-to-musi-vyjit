@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite';
+import fs from 'fs';
+import path from 'path';
 
 export default defineConfig({
     server: {
+        https: {
+            key: fs.readFileSync(path.resolve(__dirname, 'certs/key.pem')),
+            cert: fs.readFileSync(path.resolve(__dirname, 'certs/cert.pem')),
+        },
         proxy: {
             '/api': {
-                target: 'http://localhost:3000',
+                target: 'https://localhost:3000',
                 changeOrigin: true,
+                secure: false, // Accept self-signed certs from backend
             }
         }
     }
