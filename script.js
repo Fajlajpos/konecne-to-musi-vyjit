@@ -3,48 +3,55 @@ window.enterSite = enterSite;
 window.resetSite = resetSite;
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Site loaded successfully');
-
     // Check if we should skip landing screen (after login/register/logout)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('skipLanding') === 'true') {
-        // Immediately enter site and skip landing screen
-        const landingScreen = document.getElementById('landing');
-        const mainContent = document.getElementById('main-content');
-        const body = document.body;
-
-        if (landingScreen && mainContent) {
-            landingScreen.classList.add('hidden');
-            landingScreen.style.display = 'none';
-            mainContent.style.display = 'block';
-            mainContent.style.opacity = '1';
-            body.style.overflow = 'auto';
-
-            setTimeout(() => {
-                setupNavigation();
-                if (window.location.hash) {
-                    const targetId = window.location.hash.substring(1);
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        targetElement.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-            }, 100);
-        }
-
-        const cleanUrl = window.location.pathname + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
+        skipLandingScreen();
     }
 
-    // Elements
+    // Initialize elements and event listeners
+    initializeLandingInteractions();
+    initializeScrollAnimations();
+});
+
+function skipLandingScreen() {
+    const landingScreen = document.getElementById('landing');
+    const mainContent = document.getElementById('main-content');
+    const body = document.body;
+
+    if (landingScreen && mainContent) {
+        landingScreen.classList.add('hidden');
+        landingScreen.style.display = 'none';
+        mainContent.style.display = 'block';
+        mainContent.style.opacity = '1';
+        body.style.overflow = 'auto';
+
+        setTimeout(() => {
+            setupNavigation();
+            handleInitialHash();
+        }, 100);
+    }
+
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+}
+
+function handleInitialHash() {
+    if (window.location.hash) {
+        const targetId = window.location.hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+}
+
+function initializeLandingInteractions() {
     const logo = document.getElementById('logo-landing');
     const logoShine = document.querySelector('.logo-shine-layer');
-    const homeLink = document.getElementById('nav-home');
     const landingScreen = document.getElementById('landing');
-    const cartBadge = document.querySelector('.cart-badge');
-    let cartCount = 0;
 
-    // Logo Shine Effect - FIXED
+    // Logo Shine Effect
     if (logo && logoShine) {
         logo.addEventListener('mousemove', (e) => {
             const rect = logo.getBoundingClientRect();
@@ -68,6 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
         logo.parentElement.classList.add('clicked');
         landingScreen.classList.add('blackout');
 
+        // Play click sound if available
+        if (window.audioManager) window.audioManager.playClick();
+
         setTimeout(() => {
             enterSite();
         }, 1200);
@@ -80,34 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enter key support
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const landingScreen = document.getElementById('landing');
             if (landingScreen && !landingScreen.classList.contains('hidden')) {
                 triggerEntrance();
             }
         }
     });
+}
 
-    // Home Link Logic - FIXED: return to landing screen
-    if (homeLink) {
-        homeLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            resetSite();
-        });
-    }
-
-    // Smooth scroll for navigation links
-    document.querySelectorAll('.nav-link:not(#nav-home)').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    });
-
-    // Entrance animations for sections
+function initializeScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -128,51 +118,57 @@ document.addEventListener('DOMContentLoaded', () => {
         el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
         observer.observe(el);
     });
-});
+}
 
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const clothingSection = document.getElementById('obleceni');
     const aboutSection = document.getElementById('o-nas');
 
+    // Clean up old listeners by cloning
     navLinks.forEach(link => {
         const newLink = link.cloneNode(true);
         link.parentNode.replaceChild(newLink, link);
     });
 
+    // Re-attach listeners with audio
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
+            // Play sound
+            if (window.audioManager) window.audioManager.playClick();
+
             const href = link.getAttribute('href');
 
+            // HOME Button Logic
             if (link.id === 'nav-home' || href === '#') {
                 e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                resetSite();
                 return;
             }
 
+            // Section Navigation Logic
             if (href.includes('#')) {
                 const hash = href.split('#')[1];
-                if (hash === 'o-nas') {
+
+                if (hash === 'o-nas' || hash === 'obleceni') {
                     e.preventDefault();
-                    if (clothingSection) clothingSection.style.display = 'none';
-                    if (aboutSection) {
-                        aboutSection.style.display = 'block';
-                        aboutSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    window.history.pushState(null, null, '#o-nas');
-                } else if (hash === 'obleceni') {
-                    e.preventDefault();
-                    if (aboutSection) aboutSection.style.display = 'none';
-                    if (clothingSection) {
-                        clothingSection.style.display = 'block';
-                        clothingSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                    window.history.pushState(null, null, '#obleceni');
+
+                    // Toggle sections
+                    if (clothingSection) clothingSection.style.display = hash === 'obleceni' ? 'block' : 'none';
+                    if (aboutSection) aboutSection.style.display = hash === 'o-nas' ? 'block' : 'none';
+
+                    // Scroll to section
+                    const targetSection = hash === 'obleceni' ? clothingSection : aboutSection;
+                    if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth' });
+
+                    // Update URL
+                    window.history.pushState(null, null, `#${hash}`);
                 }
             }
         });
     });
 
+    // Initial state check
     if (window.location.hash === '#o-nas') {
         if (clothingSection) clothingSection.style.display = 'none';
         if (aboutSection) aboutSection.style.display = 'block';
@@ -218,5 +214,8 @@ function resetSite() {
 
         body.style.overflow = 'hidden';
         window.scrollTo(0, 0);
+
+        // Clear URL hash and params to ensure clean state
+        window.history.pushState({}, document.title, window.location.pathname);
     }, 500);
 }
