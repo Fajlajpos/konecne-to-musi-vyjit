@@ -37,11 +37,6 @@ function clearSession() {
     localStorage.removeItem(SESSION_KEY);
 }
 
-// Generate unique ID
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
 // Show message
 function showMessage(elementId, message, isError = true) {
     const messageEl = document.getElementById(elementId);
@@ -66,33 +61,6 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// Check password strength
-function checkPasswordStrength(password) {
-    let strength = 0;
-    let feedback = '';
-
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
-    if (strength <= 2) {
-        feedback = 'Weak';
-        return { strength: 25, color: '#ff6b6b', text: feedback };
-    } else if (strength <= 4) {
-        feedback = 'Medium';
-        return { strength: 50, color: '#ffa500', text: feedback };
-    } else if (strength <= 5) {
-        feedback = 'Good';
-        return { strength: 75, color: '#90ee90', text: feedback };
-    } else {
-        feedback = 'Excellent';
-        return { strength: 100, color: '#6bff6b', text: feedback };
-    }
-}
-
 // ==========================================
 // REGISTRATION PAGE
 // ==========================================
@@ -102,49 +70,27 @@ if (window.location.pathname.includes('register.html')) {
         const form = document.getElementById('register-form');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirm-password');
-        const strengthFill = document.getElementById('strength-fill');
-        const strengthText = document.getElementById('strength-text');
-
-        // Password strength meter
-        if (passwordInput && strengthFill && strengthText) {
-            passwordInput.addEventListener('input', (e) => {
-                const password = e.target.value;
-                if (password.length === 0) {
-                    strengthFill.style.width = '0';
-                    strengthText.textContent = '';
-                    return;
-                }
-
-                const result = checkPasswordStrength(password);
-                strengthFill.style.width = result.strength + '%';
-                strengthFill.style.backgroundColor = result.color;
-                strengthText.textContent = result.text;
-                strengthText.style.color = result.color;
-            });
-        }
 
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', () => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
                 const wrapper = button.closest('.password-input-wrapper');
+                if (!wrapper) return;
+
                 const input = wrapper.querySelector('input');
-                const eyeIcon = button.querySelector('.eye-icon');
-                const eyeOffIcon = button.querySelector('.eye-off-icon');
+                if (!input) return;
 
                 if (input.type === 'password') {
                     input.type = 'text';
-                    eyeIcon.style.display = 'none';
-                    eyeOffIcon.style.display = 'block';
                 } else {
                     input.type = 'password';
-                    eyeIcon.style.display = 'block';
-                    eyeOffIcon.style.display = 'none';
                 }
             });
         });
 
         // Form submission
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage('error-message');
             hideMessage('success-message');
@@ -170,40 +116,50 @@ if (window.location.pathname.includes('register.html')) {
                 return;
             }
 
+            if (!/[A-Z]/.test(password)) {
+                showMessage('error-message', 'Password must contain at least one uppercase letter');
+                return;
+            }
+
+            if (!/[0-9]/.test(password)) {
+                showMessage('error-message', 'Password must contain at least one number');
+                return;
+            }
+
             if (password !== confirmPassword) {
                 showMessage('error-message', 'Passwords do not match');
                 return;
             }
 
-            // Check if user already exists
-            const users = getUsers();
-            if (users.find(u => u.email === email)) {
-                showMessage('error-message', 'User with this email already exists');
-                return;
+            try {
+                const csrfRes = await fetch('/api/csrf-token');
+                const csrfData = await csrfRes.json();
+                const csrfToken = csrfData.csrfToken;
+
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    saveSession({ name: data.user.name, email: data.user.email, role: data.user.role });
+                    showMessage('success-message', 'Registration successful! Redirecting...', false);
+                    setTimeout(() => {
+                        window.location.href = 'index.html?skipLanding=true';
+                    }, 1500);
+                } else {
+                    showMessage('error-message', data.error || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage('error-message', 'Network error occurred');
             }
-
-            // Create new user
-            const newUser = {
-                id: generateId(),
-                name: name,
-                email: email,
-                password: password, // In production, this should be hashed!
-                createdAt: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            saveUsers(users);
-
-            // Auto-login
-            saveSession(newUser);
-
-            // Show success message
-            showMessage('success-message', 'Registration successful! Redirecting...', false);
-
-            // Redirect to home page (skip landing)
-            setTimeout(() => {
-                window.location.href = 'index.html?skipLanding=true';
-            }, 1500);
         });
     });
 }
@@ -219,32 +175,29 @@ if (window.location.pathname.includes('login.html')) {
 
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', () => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
                 const wrapper = button.closest('.password-input-wrapper');
+                if (!wrapper) return;
+
                 const input = wrapper.querySelector('input');
-                const eyeIcon = button.querySelector('.eye-icon');
-                const eyeOffIcon = button.querySelector('.eye-off-icon');
+                if (!input) return;
 
                 if (input.type === 'password') {
                     input.type = 'text';
-                    eyeIcon.style.display = 'none';
-                    eyeOffIcon.style.display = 'block';
                 } else {
                     input.type = 'password';
-                    eyeIcon.style.display = 'block';
-                    eyeOffIcon.style.display = 'none';
                 }
             });
         });
 
         // Form submission
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage('error-message');
 
             const email = document.getElementById('email').value.trim();
             const password = passwordInput.value;
-            const rememberMe = document.getElementById('remember-me').checked;
 
             // Validation
             if (!email || !password) {
@@ -257,25 +210,32 @@ if (window.location.pathname.includes('login.html')) {
                 return;
             }
 
-            // Find user
-            const users = getUsers();
-            const user = users.find(u => u.email === email);
+            try {
+                const csrfRes = await fetch('/api/csrf-token');
+                const csrfData = await csrfRes.json();
+                const csrfToken = csrfData.csrfToken;
 
-            if (!user) {
-                showMessage('error-message', 'User not found');
-                return;
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    saveSession({ name: data.name, email: email, role: data.role });
+                    window.location.href = 'index.html?skipLanding=true';
+                } else {
+                    showMessage('error-message', data.error || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage('error-message', 'Network error occurred');
             }
-
-            if (user.password !== password) {
-                showMessage('error-message', 'Incorrect password');
-                return;
-            }
-
-            // Save session
-            saveSession(user);
-
-            // Redirect to home page (skip landing)
-            window.location.href = 'index.html?skipLanding=true';
         });
     });
 }
@@ -284,7 +244,6 @@ if (window.location.pathname.includes('login.html')) {
 // MAIN PAGE - USER ICON & SESSION
 // ==========================================
 
-// Check if we're on the main page (index.html or root)
 const currentPath = window.location.pathname;
 const isMainPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('index.html') || (!currentPath.includes('login.html') && !currentPath.includes('register.html'));
 
@@ -292,14 +251,28 @@ if (isMainPage) {
     document.addEventListener('DOMContentLoaded', () => {
         updateUserIcon();
 
-        // Logout button
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                try {
+                    const csrfRes = await fetch('/api/csrf-token');
+                    const csrfData = await csrfRes.json();
+                    const csrfToken = csrfData.csrfToken;
+
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'CSRF-Token': csrfToken
+                        }
+                    });
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+
                 clearSession();
                 updateUserIcon();
-                // Redirect to clothing section after logout
                 window.location.href = 'index.html?skipLanding=true#obleceni';
             });
         }
@@ -313,12 +286,44 @@ function updateUserIcon() {
     const loginLink = document.getElementById('login-link');
     const registerLink = document.getElementById('register-link');
     const logoutBtn = document.getElementById('logout-btn');
+    const navContainer = document.querySelector('.nav-container');
 
     if (!userNameEl || !loginLink || !registerLink || !logoutBtn) return;
 
     if (session) {
         // User is logged in
-        userNameEl.textContent = session.name;
+        if (session.role === 'admin') {
+            // Admin display WITHOUT emojis - just gold badge
+            userNameEl.innerHTML = `${session.name} <span style="background: #ffd700; color: #000; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; margin-left: 0.5rem; font-weight: bold;">ADMIN</span>`;
+            userNameEl.style.color = '#ffd700';
+            userNameEl.style.fontWeight = 'bold';
+            userNameEl.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+
+            // Add database button OUTSIDE user-icon-container
+            let dbButton = document.getElementById('admin-db-button');
+            if (!dbButton && navContainer) {
+                dbButton = document.createElement('a');
+                dbButton.id = 'admin-db-button';
+                dbButton.href = 'admin.html';
+                dbButton.textContent = 'DATABÁZE';
+                dbButton.className = 'nav-link';
+                dbButton.style.cssText = 'color: #ffd700; font-weight: bold; text-decoration: none; margin-left: 1rem;';
+
+                const cartContainer = document.querySelector('.cart-icon-container');
+                if (cartContainer) {
+                    navContainer.insertBefore(dbButton, cartContainer);
+                }
+            }
+        } else {
+            // Regular user
+            userNameEl.textContent = session.name;
+            userNameEl.style.color = '';
+            userNameEl.style.fontWeight = '';
+            userNameEl.style.textShadow = '';
+            const dbButton = document.getElementById('admin-db-button');
+            if (dbButton) dbButton.remove();
+        }
+
         userNameEl.style.display = 'inline';
         loginLink.style.display = 'none';
         registerLink.style.display = 'none';
@@ -329,6 +334,9 @@ function updateUserIcon() {
         loginLink.style.display = 'block';
         registerLink.style.display = 'block';
         logoutBtn.style.display = 'none';
+
+        const dbButton = document.getElementById('admin-db-button');
+        if (dbButton) dbButton.remove();
     }
 }
 

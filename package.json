@@ -5,6 +5,7 @@
   "main": "script.js",
   "scripts": {
     "dev": "vite",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,5 +14,17 @@
   "type": "commonjs",
   "devDependencies": {
     "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "sqlite3": "^5.1.7"
   }
 }

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - OBLIVIONS</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Admin Specific Styles */
+        .admin-container {
+            max-width: 1200px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active,
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #555;
+            color: #fff;
+        }
+
+        .status-completed {
+            background: #2ecc71;
+            color: #000;
+        }
+
+        .status-cancelled {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #111;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid #333;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* Login Form Styles (Reuse auth styles but specific for admin) */
+        #admin-login-view {
+            max-width: 400px;
+            margin: 150px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grain-overlay"></div>
+
+    <!-- CSRF Token Container -->
+    <input type="hidden" id="csrf-token">
+
+    <!-- Login View -->
+    <div id="admin-login-view">
+        <div class="auth-box">
+            <h1 class="auth-title">ADMIN LOGIN</h1>
+            <div id="login-error" class="error-message" style="display: none; color: #e74c3c; margin-bottom: 1rem;">
+            </div>
+            <form id="admin-login-form" class="auth-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="admin-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="admin-password" required>
+                </div>
+                <button type="submit" class="auth-button">ENTER</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="admin-dashboard-view" style="display: none;">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h2>DASHBOARD</h2>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="index.html?skipLanding=true" class="auth-button"
+                        style="width: auto; padding: 0.5rem 1rem; text-decoration: none; display: inline-block;">← BACK
+                        TO SHOP</a>
+                    <button id="logout-btn" class="auth-button"
+                        style="width: auto; padding: 0.5rem 1rem;">LOGOUT</button>
+                </div>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('users')">REGISTERED USERS</button>
+                <button class="tab-btn" onclick="switchTab('orders')">ORDERS</button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="tab-users">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registered Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="tab-orders" style="display: none;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>Order Details #<span id="modal-order-id"></span></h2>
+            <div id="modal-content-body">
+                <!-- Details loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>
